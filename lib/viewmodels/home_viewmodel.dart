@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class HomeViewModel extends ChangeNotifier {
   int _count = 0;
-  int _goal = 100;
+  final int _goal = 100;
 
   int get count => _count;
   int get goal => _goal;
