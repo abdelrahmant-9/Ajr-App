@@ -2,6 +2,7 @@
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tasbeeh_app/views/qibla_view.dart';
 import '../utils/app_colors.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -18,6 +19,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   int _previousCount = 0;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -30,6 +32,15 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut, reverseCurve: Curves.easeIn),
     );
+
+    // Simulate loading
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -51,233 +62,236 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     }
     _previousCount = vm.count;
 
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      bottomNavigationBar: _bottomNavBar(),
-      body: SafeArea(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
+    return Skeletonizer(
+      enabled: _isLoading,
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        bottomNavigationBar: _bottomNavBar(),
+        body: SafeArea(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
 
-                  /// Top Icons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child: IconButton(
-                          icon: const Icon(Icons.explore_outlined, color: AppColors.primary),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const QiblaView()),
-                            );
-                          },
-                        ),
-                      ),
-                      CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child: IconButton(
-                          icon: const Icon(Icons.person_outline, color: AppColors.primary),
-                          onPressed: () {},
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  /// Counter
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 150),
-                    transitionBuilder: (Widget child, Animation<double> animation) {
-                      return ScaleTransition(
-                        scale: animation,
-                        child: FadeTransition(
-                          opacity: animation,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: Text(
-                      _toArabicNumbers(vm.count.toString()),
-                      key: ValueKey<int>(vm.count),
-                      style: const TextStyle(
-                        fontSize: 80,
-                        fontFamily: 'Tajawal',
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.black,
-                      ),
-                    ),
-                  ),
-
-                  /// Title
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryVeryLight.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Text(
-                      "سبحان الله",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Tajawal',
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  /// Progress
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
+                    /// Top Icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${_toArabicNumbers(vm.count.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
-                              style: TextStyle(
-                                color: (vm.count >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                                fontFamily: 'Tajawal',
-                              ),
-                            ),
-                            const Text(
-                              "الهدف اليومي",
-                              style: TextStyle(color: AppColors.darkGrey, fontWeight: FontWeight.w700, fontSize: 18, fontFamily: 'Tajawal'),
-                            ),
-                          ],
+                        CircleAvatar(
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          child: IconButton(
+                            icon: const Icon(Icons.explore_outlined, color: AppColors.primary),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const QiblaView()),
+                              );
+                            },
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Directionality(
-                          textDirection: TextDirection.rtl,
-                          child: LinearProgressIndicator(
-                            value: vm.progress,
-                            minHeight: 12,
-                            borderRadius: BorderRadius.circular(10),
-                            backgroundColor: AppColors.lightGrey,
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        CircleAvatar(
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          child: IconButton(
+                            icon: const Icon(Icons.person_outline, color: AppColors.primary),
+                            onPressed: () {},
                           ),
                         ),
                       ],
                     ),
-                  ),
 
-                  const Spacer(),
+                    const SizedBox(height: 30),
 
-                  /// Big Circular Button
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary.withOpacity(0.05),
+                    /// Counter
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return ScaleTransition(
+                          scale: animation,
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        _toArabicNumbers(vm.count.toString()),
+                        key: ValueKey<int>(vm.count),
+                        style: const TextStyle(
+                          fontSize: 80,
+                          fontFamily: 'Tajawal',
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.black,
                         ),
                       ),
-                      Container(
-                        width: 250,
-                        height: 250,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
+                    ),
+
+                    /// Title
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryVeryLight.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: const Text(
+                        "سبحان الله",
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Tajawal',
                         ),
                       ),
-                      GestureDetector(
-                        onTapDown: (_) => _animationController.forward(),
-                        onTapUp: (_) {
-                          _animationController.reverse();
-                          vm.increment();
-                        },
-                        onTapCancel: () => _animationController.reverse(),
-                        child: AnimatedBuilder(
-                          animation: _animationController,
-                          builder: (context, child) {
-                            return Transform.scale(
-                              scale: _scaleAnimation.value,
-                              child: Container(
-                                width: 200,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.primary,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.primary.withOpacity(0.3 * _animationController.value),
-                                      blurRadius: 30 * _animationController.value,
-                                      spreadRadius: 15 * _animationController.value,
-                                    ),
-                                  ],
-                                ),
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    /// Progress
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.touch_app_outlined, color: AppColors.white, size: 50),
-                              SizedBox(height: 10),
                               Text(
-                                "اضغط هنا",
+                                '${_toArabicNumbers(vm.count.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
                                 style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                                  color: (vm.count >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
                                   fontFamily: 'Tajawal',
                                 ),
                               ),
+                              const Text(
+                                "الهدف اليومي",
+                                style: TextStyle(color: AppColors.darkGrey, fontWeight: FontWeight.w700, fontSize: 18, fontFamily: 'Tajawal'),
+                              ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Directionality(
+                            textDirection: TextDirection.rtl,
+                            child: LinearProgressIndicator(
+                              value: vm.progress,
+                              minHeight: 12,
+                              borderRadius: BorderRadius.circular(10),
+                              backgroundColor: AppColors.lightGrey,
+                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
 
-                  const Spacer(),
+                    const Spacer(),
 
-                  /// Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildChip("السجل", Icons.history, () {}),
-                      const SizedBox(width: 20),
-                      _buildChip("تصفير", Icons.refresh, vm.count == 0 ? null : () {
-                        _showResetConfirmationDialog(context, vm);
-                      }),
-                    ],
-                  ),
+                    /// Big Circular Button
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 300,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary.withOpacity(0.05),
+                          ),
+                        ),
+                        Container(
+                          width: 250,
+                          height: 250,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTapDown: (_) => _animationController.forward(),
+                          onTapUp: (_) {
+                            _animationController.reverse();
+                            vm.increment();
+                          },
+                          onTapCancel: () => _animationController.reverse(),
+                          child: AnimatedBuilder(
+                            animation: _animationController,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _scaleAnimation.value,
+                                child: Container(
+                                  width: 200,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primary,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary.withOpacity(0.3 * _animationController.value),
+                                        blurRadius: 30 * _animationController.value,
+                                        spreadRadius: 15 * _animationController.value,
+                                      ),
+                                    ],
+                                  ),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.touch_app_outlined, color: AppColors.white, size: 50),
+                                SizedBox(height: 10),
+                                Text(
+                                  "اضغط هنا",
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Tajawal',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 20),
-                ],
+                    const Spacer(),
+
+                    /// Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildChip("السجل", Icons.history, () {}),
+                        const SizedBox(width: 20),
+                        _buildChip("تصفير", Icons.refresh, vm.count == 0 ? null : () {
+                          _showResetConfirmationDialog(context, vm);
+                        }),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirectionality: BlastDirectionality.explosive,
-                emissionFrequency: 0,
-                numberOfParticles: 100,
-                gravity: 0.1,
-                shouldLoop: false,
-                colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  emissionFrequency: 0,
+                  numberOfParticles: 100,
+                  gravity: 0.1,
+                  shouldLoop: false,
+                  colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

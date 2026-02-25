@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../utils/app_colors.dart';
 import '../blocs/qibla/qibla_cubit.dart';
 import 'calibration_dialog.dart';
@@ -33,30 +34,40 @@ class QiblaBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<QiblaCubit, QiblaState>(
       builder: (context, state) {
-        if (state is QiblaLoading || state is QiblaInitial) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-        }
-        if (state is QiblaError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                state.message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 18, color: Colors.red),
-              ),
-            ),
-          );
-        }
-        if (state is QiblaLoaded) {
-          return QiblahCompass(
-            qiblaDirection: state.qiblaDirection,
-            compassHeading: state.compassHeading,
-            distance: state.distance,
-            alignment: state.alignment,
-          );
-        }
-        return const Center(child: Text("حالة غير معروفة", style: TextStyle(fontFamily: 'Tajawal')));
+        final isLoading = state is QiblaLoading || state is QiblaInitial;
+        return Skeletonizer(
+          enabled: isLoading,
+          child: Builder(builder: (context) {
+            if (state is QiblaError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontFamily: 'Tajawal', fontSize: 18, color: Colors.red),
+                  ),
+                ),
+              );
+            }
+            if (state is QiblaLoaded) {
+              return QiblahCompass(
+                qiblaDirection: state.qiblaDirection,
+                compassHeading: state.compassHeading,
+                distance: state.distance,
+                alignment: state.alignment,
+              );
+            }
+            // Render a skeleton version of QiblahCompass for the loading state
+            return const QiblahCompass(
+              qiblaDirection: 0,
+              compassHeading: 0,
+              distance: 0,
+              alignment: QiblaAlignment.far,
+            );
+          }),
+        );
       },
     );
   }
@@ -239,13 +250,15 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                       // Kaaba icon at the top
                       Positioned(
                         top: 25,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: arrowColor, // Match arrow color
-                            borderRadius: BorderRadius.circular(14),
+                        child: Skeleton.leaf(
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: arrowColor, // Match arrow color
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(Icons.mosque, color: Colors.white, size: 22),
                           ),
-                          child: const Icon(Icons.mosque, color: Colors.white, size: 22),
                         ),
                       ),
                     ],
