@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tasbeeh_app/utils/app_colors.dart';
+import 'package:ajr/utils/app_colors.dart';
 import 'home_view.dart';
 import 'azkar_view.dart';
 import 'stats_view.dart';

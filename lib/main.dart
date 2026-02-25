@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:tasbeeh_app/views/main_layout.dart';
+import 'package:ajr/views/main_layout.dart'; // Changed back to MainLayout
 import 'firebase_options.dart';
 import 'viewmodels/home_viewmodel.dart';
 import 'services/sync_service.dart';
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
             labelSmall: TextStyle(fontFamily: 'Tajawal'),
           ),
         ),
-        home: const MainLayout(),
+        home: const MainLayout(), // Changed back to MainLayout
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tasbeeh_app/views/qibla_view.dart';
+import 'package:ajr/views/qibla_view.dart';
 import 'package:vibration/vibration.dart';
 import '../utils/app_colors.dart';
 import '../viewmodels/home_viewmodel.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tasbeeh_app/utils/app_colors.dart';
+import 'package:ajr/utils/app_colors.dart';
 import '../viewmodels/home_viewmodel.dart';
 
 class StatsView extends StatefulWidget {
