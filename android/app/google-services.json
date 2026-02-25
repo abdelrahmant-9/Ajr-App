@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "88957249633",
+    "project_id": "ajr-app-f7c4a",
+    "storage_bucket": "ajr-app-f7c4a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:88957249633:android:01e751634f5613a5402220",
+        "android_client_info": {
+          "package_name": "com.NTI.tasbeeh_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAR_M3E7oCROK8sWCgnW1kVMj1Fsu4qyL8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
