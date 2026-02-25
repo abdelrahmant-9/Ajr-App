@@ -1,9 +1,9 @@
-
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tasbeeh_app/views/qibla_view.dart';
+import 'package:vibration/vibration.dart';
 import '../utils/app_colors.dart';
 import '../viewmodels/home_viewmodel.dart';
 
@@ -15,16 +15,18 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin {
-  late ConfettiController _confettiController;
-  int _previousCount = 0;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  bool _isLoading = true;
+  late ConfettiController _confettiController;
+  int _previousCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HomeViewModel>(context, listen: false).init();
+    });
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -32,21 +34,13 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut, reverseCurve: Curves.easeIn),
     );
-
-    // Simulate loading
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
+    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
   }
 
   @override
   void dispose() {
-    _confettiController.dispose();
     _animationController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -56,244 +50,386 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<HomeViewModel>();
-    if (vm.count == vm.goal && _previousCount < vm.goal && vm.goal != 0) {
-      _confettiController.play();
-    }
-    _previousCount = vm.count;
+    return Consumer<HomeViewModel>(
+      builder: (context, vm, child) {
+        if (!vm.isLoading && vm.model.counter == vm.goal && _previousCount < vm.goal && vm.goal != 0) {
+          _confettiController.play();
+        }
+        if (!vm.isLoading) {
+          _previousCount = vm.model.counter;
+        }
 
-    return Skeletonizer(
-      enabled: _isLoading,
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        bottomNavigationBar: _bottomNavBar(),
-        body: SafeArea(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-
-                    /// Top Icons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Scaffold(
+          backgroundColor: AppColors.white,
+          bottomNavigationBar: _bottomNavBar(),
+          body: SafeArea(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Skeletonizer(
+                  enabled: vm.isLoading,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          child: IconButton(
-                            icon: const Icon(Icons.explore_outlined, color: AppColors.primary),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const QiblaView()),
-                              );
-                            },
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: IconButton(
+                                icon: const Icon(Icons.explore_outlined, color: AppColors.primary),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const QiblaView()),
+                                  );
+                                },
+                              ),
+                            ),
+                            CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: IconButton(
+                                icon: const Icon(Icons.person_outline, color: AppColors.primary),
+                                onPressed: () {},
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 150),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return ScaleTransition(
+                              scale: animation,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Text(
+                            _toArabicNumbers(vm.isLoading ? "0" : vm.model.counter.toString()),
+                            key: ValueKey<int>(vm.isLoading ? 0 : vm.model.counter),
+                            style: const TextStyle(
+                              fontSize: 80,
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.black,
+                            ),
                           ),
                         ),
-                        CircleAvatar(
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          child: IconButton(
-                            icon: const Icon(Icons.person_outline, color: AppColors.primary),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
-                    ),
 
-                    const SizedBox(height: 30),
-
-                    /// Counter
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      transitionBuilder: (Widget child, Animation<double> animation) {
-                        return ScaleTransition(
-                          scale: animation,
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Text(
-                        _toArabicNumbers(vm.count.toString()),
-                        key: ValueKey<int>(vm.count),
-                        style: const TextStyle(
-                          fontSize: 80,
-                          fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-
-                    /// Title
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryVeryLight.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: const Text(
-                        "سبحان الله",
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Tajawal',
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Progress
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${_toArabicNumbers(vm.count.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
-                                style: TextStyle(
-                                  color: (vm.count >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
+                        /// Zekr Title (Button)
+                        GestureDetector(
+                          onTap: () => _showZekrPicker(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryVeryLight.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 400),
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(opacity: animation, child: child),
+                              child: Text(
+                                vm.currentZekr,
+                                key: ValueKey(vm.currentZekr),
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 16,
                                   fontFamily: 'Tajawal',
                                 ),
                               ),
-                              const Text(
-                                "الهدف اليومي",
-                                style: TextStyle(color: AppColors.darkGrey, fontWeight: FontWeight.w700, fontSize: 18, fontFamily: 'Tajawal'),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${_toArabicNumbers(vm.isLoading ? "0" : vm.model.counter.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
+                                    style: TextStyle(
+                                      color: (!vm.isLoading && vm.model.counter >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      fontFamily: 'Tajawal',
+                                    ),
+                                  ),
+                                  const Text(
+                                    "الهدف اليومي",
+                                    style: TextStyle(color: AppColors.darkGrey, fontWeight: FontWeight.w700, fontSize: 18, fontFamily: 'Tajawal'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Directionality(
+                                textDirection: TextDirection.rtl,
+                                child: LinearProgressIndicator(
+                                  value: vm.progress,
+                                  minHeight: 12,
+                                  borderRadius: BorderRadius.circular(10),
+                                  backgroundColor: AppColors.lightGrey,
+                                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Directionality(
-                            textDirection: TextDirection.rtl,
-                            child: LinearProgressIndicator(
-                              value: vm.progress,
-                              minHeight: 12,
-                              borderRadius: BorderRadius.circular(10),
-                              backgroundColor: AppColors.lightGrey,
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    /// Big Circular Button
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 300,
-                          height: 300,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withOpacity(0.05),
-                          ),
                         ),
-                        Container(
-                          width: 250,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTapDown: (_) => _animationController.forward(),
-                          onTapUp: (_) {
-                            _animationController.reverse();
-                            vm.increment();
-                          },
-                          onTapCancel: () => _animationController.reverse(),
-                          child: AnimatedBuilder(
-                            animation: _animationController,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _scaleAnimation.value,
-                                child: Container(
-                                  width: 200,
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.primary,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.primary.withOpacity(0.3 * _animationController.value),
-                                        blurRadius: 30 * _animationController.value,
-                                        spreadRadius: 15 * _animationController.value,
+                        const Spacer(),
+                        Skeleton.leaf(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 300,
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primary.withOpacity(0.05),
+                                ),
+                              ),
+                              Container(
+                                width: 250,
+                                height: 250,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTapDown: (_) => _animationController.forward(),
+                                onTapUp: (_) {
+                                  _animationController.reverse();
+                                  vm.increment();
+                                },
+                                onTapCancel: () => _animationController.reverse(),
+                                child: AnimatedBuilder(
+                                  animation: _animationController,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _scaleAnimation.value,
+                                      child: Container(
+                                        width: 200,
+                                        height: 200,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.primary,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary.withOpacity(0.3 * _animationController.value),
+                                              blurRadius: 30 * _animationController.value,
+                                              spreadRadius: 15 * _animationController.value,
+                                            ),
+                                          ],
+                                        ),
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.touch_app_outlined, color: AppColors.white, size: 50),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        "اضغط هنا",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Tajawal',
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: child,
                                 ),
-                              );
-                            },
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.touch_app_outlined, color: AppColors.white, size: 50),
-                                SizedBox(height: 10),
-                                Text(
-                                  "اضغط هنا",
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Tajawal',
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildChip("السجل", Icons.history, () {}),
+                            const SizedBox(width: 20),
+                            _buildChip("تصفير", Icons.refresh, !vm.isLoading && vm.model.counter == 0 ? null : () {
+                              _showResetConfirmationDialog(context, vm);
+                            }),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                       ],
                     ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    confettiController: _confettiController,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    emissionFrequency: 0.0,
+                    numberOfParticles: 100,
+                    gravity: 0.1,
+                    shouldLoop: false,
+                    colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-                    const Spacer(),
+  void _showZekrPicker(BuildContext context) {
+    final viewModel = context.read<HomeViewModel>();
+    final searchController = TextEditingController();
+    List<String> filtered = List.from(viewModel.azkar);
 
-                    /// Buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildChip("السجل", Icons.history, () {}),
-                        const SizedBox(width: 20),
-                        _buildChip("تصفير", Icons.refresh, vm.count == 0 ? null : () {
-                          _showResetConfirmationDialog(context, vm);
-                        }),
-                      ],
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  top: 20,
+                  left: 20,
+                  right: 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Search
+                    TextField(
+                      controller: searchController,
+                      textAlign: TextAlign.right,
+                      decoration: const InputDecoration(
+                        hintText: "ابحث عن ذكر...",
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.lightGrey,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          filtered = viewModel.azkar
+                              .where((e) => e.contains(value))
+                              .toList();
+                        });
+                      },
                     ),
+                    const SizedBox(height: 15),
 
+                    // Add custom
+                    TextField(
+                      textAlign: TextAlign.right,
+                      decoration: const InputDecoration(
+                        hintText: "إضافة ذكر مخصص",
+                        prefixIcon: Icon(Icons.add),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.lightGrey,
+                      ),
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          viewModel.addCustomZekr(value.trim());
+                          searchController.clear();
+                          setState(() {
+                            filtered = viewModel.azkar;
+                          });
+                        }
+                      },
+                    ),
                     const SizedBox(height: 20),
+
+                    // List
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      child: ReorderableListView(
+                        shrinkWrap: true,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            viewModel.reorderZekr(oldIndex, newIndex);
+                            filtered = List.from(viewModel.azkar);
+                          });
+                        },
+                        children: filtered.map((zekr) {
+                          final isSelected = zekr == viewModel.currentZekr;
+                          return Dismissible(
+                            key: Key(zekr),
+                            direction: DismissDirection.startToEnd,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              decoration: BoxDecoration(
+                                color: AppColors.red,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: const Icon(Icons.delete, color: Colors.white),
+                            ),
+                            onDismissed: (_) {
+                              setState(() {
+                                viewModel.removeZekr(zekr);
+                                filtered.remove(zekr);
+                              });
+                            },
+                            child: ListTile(
+                              title: Text(
+                                zekr,
+                                style: TextStyle(
+                                  color: isSelected ? AppColors.primary : AppColors.black,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(Icons.check_circle, color: AppColors.primary)
+                                  : const Icon(Icons.radio_button_unchecked),
+                              onTap: () async {
+                                if (await Vibration.hasVibrator() ?? false) {
+                                  Vibration.vibrate(duration: 50);
+                                }
+                                viewModel.changeZekr(zekr);
+                                Navigator.pop(context);
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: ConfettiWidget(
-                  confettiController: _confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  emissionFrequency: 0,
-                  numberOfParticles: 100,
-                  gravity: 0.1,
-                  shouldLoop: false,
-                  colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
