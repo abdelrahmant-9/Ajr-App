@@ -77,6 +77,11 @@ class QiblaCubit extends Cubit<QiblaState> {
     }
   }
 
+  void resetCompass() {
+    _compassSubscription?.cancel();
+    initQibla();
+  }
+
   double _calculateQiblaDirection(double userLat, double userLng) {
     final double lat1 = vm.radians(userLat);
     final double lon1 = vm.radians(userLng);

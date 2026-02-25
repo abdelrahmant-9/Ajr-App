@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/app_colors.dart';
 import '../blocs/qibla/qibla_cubit.dart';
+import 'calibration_dialog.dart';
 
 class QiblaView extends StatelessWidget {
   const QiblaView({super.key});
@@ -167,7 +168,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
-          const QiblaAppBar(),
+          QiblaAppBar(),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -296,8 +297,18 @@ class QiblaAppBar extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.info_outline, color: AppColors.darkGrey, size: 28),
-          onPressed: () {},
+          icon: const Icon(Icons.all_inclusive, color: AppColors.darkGrey, size: 28),
+          onPressed: () {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => CalibrationDialog(
+                onDone: () {
+                  context.read<QiblaCubit>().resetCompass();
+                },
+              ),
+            );
+          },
         ),
         const Text(
           "اتجاه القبلة",
