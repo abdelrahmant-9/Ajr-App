@@ -203,17 +203,17 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                   "${_toArabicNumbers(widget.compassHeading.toStringAsFixed(0))}°",
                   style: const TextStyle(
                     color: AppColors.primary,
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 55,
+                    fontWeight: FontWeight.w900,
                     fontFamily: 'Tajawal',
                   ),
                 ),
-                const SizedBox(height: 8),
                 Text(
                   _getCardinalDirection(widget.compassHeading),
                   style: const TextStyle(
                     color: AppColors.darkGrey,
-                    fontSize: 20,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
                     fontFamily: 'Tajawal',
                   ),
                 ),
@@ -228,14 +228,20 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.grey,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.7),
-                              spreadRadius: 2,
-                              blurRadius: 40,
+                              color: Colors.grey.shade400,
+                              blurRadius: 10,
+                              spreadRadius: 1,
                             ),
                           ],
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.lightGrey,
+                            border: Border.all(color: Colors.grey.shade300, width: 2),
+                          ),
                         ),
                       ),
                       // The rotating arrow
@@ -264,16 +270,32 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                       ),
                       // Kaaba icon at the top
                       Positioned(
-                        top: 23,
-                        child: Skeleton.leaf(
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: arrowColor, // Match arrow color
-                              borderRadius: BorderRadius.circular(14),
+                        top: 10,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Skeleton.leaf(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: arrowColor, // Match arrow color
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(Icons.mosque_rounded, color: Colors.white, size: 22),
+                              ),
                             ),
-                            child: const Icon(Icons.mosque_rounded, color: Colors.white, size: 22),
-                          ),
+                            const SizedBox(height: 4),
+                            Skeleton.leaf(
+                              child: Container(
+                                width: 3,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  color: arrowColor,
+                                  borderRadius: BorderRadius.circular(1.5),
+                                ),
+                              ),
+                            )
+                          ],
                         ),
                       ),
                     ],
@@ -289,7 +311,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                     fontFamily: 'Tajawal',
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 const Text(
                   "يرجى وضع الهاتف بشكل مسطح لأفضل دقة",
                   textAlign: TextAlign.center,
@@ -303,7 +325,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
             ),
           ),
           LocationCard(distance: widget.distance),
-          const SizedBox(height: 20),
+          const SizedBox(height: 40),
         ],
       ),
     );
