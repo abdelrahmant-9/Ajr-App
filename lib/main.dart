@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:tasbeeh_app/views/main_layout.dart';
 import 'firebase_options.dart';
 import 'viewmodels/home_viewmodel.dart';
-import 'views/home_view.dart';
 import 'services/sync_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
             labelSmall: TextStyle(fontFamily: 'Tajawal'),
           ),
         ),
-        home: const HomeView(),
+        home: const MainLayout(),
       ),
     );
   }

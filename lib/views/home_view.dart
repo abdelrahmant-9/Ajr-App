@@ -61,7 +61,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
 
         return Scaffold(
           backgroundColor: AppColors.white,
-          bottomNavigationBar: _bottomNavBar(),
           body: SafeArea(
             child: Stack(
               alignment: Alignment.center,
@@ -296,6 +295,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   void _showZekrPicker(BuildContext context) {
     final viewModel = context.read<HomeViewModel>();
     final searchController = TextEditingController();
+    final addZekrController = TextEditingController();
     List<String> filtered = List.from(viewModel.azkar);
 
     showModalBottomSheet(
@@ -308,6 +308,38 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       builder: (_) {
         return StatefulBuilder(
           builder: (context, setState) {
+            void _addZekr() {
+              final value = addZekrController.text.trim();
+              if (value.isNotEmpty) {
+                if (viewModel.azkar.any((e) => e.toLowerCase() == value.toLowerCase())) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("الذكر موجود بالفعل", style: TextStyle(fontFamily: 'Tajawal')),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+
+                viewModel.addCustomZekr(value);
+                addZekrController.clear();
+                searchController.clear();
+                setState(() {
+                  filtered = List.from(viewModel.azkar);
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("تم إضافة الذكر بنجاح", style: TextStyle(fontFamily: 'Tajawal')),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                  ),
+                );
+              }
+            }
+
             return Directionality(
               textDirection: TextDirection.rtl,
               child: Padding(
@@ -338,7 +370,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         onChanged: (value) {
                           setState(() {
                             filtered = viewModel.azkar
-                                .where((e) => e.contains(value))
+                                .where((e) => e.toLowerCase().contains(value.toLowerCase()))
                                 .toList();
                           });
                         },
@@ -346,27 +378,37 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                       const SizedBox(height: 15),
 
                       // Add custom
-                      TextField(
-                        textAlign: TextAlign.right,
-                        decoration: const InputDecoration(
-                          hintText: "إضافة ذكر مخصص",
-                          prefixIcon: Icon(Icons.add),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(15)),
-                            borderSide: BorderSide.none,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: addZekrController,
+                              textAlign: TextAlign.right,
+                              decoration: const InputDecoration(
+                                hintText: "إضافة ذكر مخصص",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(15)),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: AppColors.lightGrey,
+                              ),
+                              onSubmitted: (_) => _addZekr(),
+                            ),
                           ),
-                          filled: true,
-                          fillColor: AppColors.lightGrey,
-                        ),
-                        onSubmitted: (value) {
-                          if (value.trim().isNotEmpty) {
-                            viewModel.addCustomZekr(value.trim());
-                            searchController.clear();
-                            setState(() {
-                              filtered = viewModel.azkar;
-                            });
-                          }
-                        },
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: AppColors.lightGrey,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.add, color: AppColors.primary),
+                              onPressed: _addZekr,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 20),
 
@@ -518,34 +560,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
         ),
       ),
-    );
-  }
-
-  Widget _bottomNavBar() {
-    return BottomNavigationBar(
-      backgroundColor: AppColors.white,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.grey,
-      showUnselectedLabels: true,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "الرئيسية",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book),
-          label: "الأذكار",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart),
-          label: "الإحصائيات",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: "الإعدادات",
-        ),
-      ],
     );
   }
 }

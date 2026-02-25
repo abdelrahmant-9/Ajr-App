@@ -30,13 +30,64 @@ class QiblaView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => QiblaCubit()..initQibla(),
-      child: const Directionality(
+      child: Directionality(
         textDirection: TextDirection.rtl,
         child: Scaffold(
-          backgroundColor: AppColors.lightGrey,
-          body: SafeArea(child: QiblaBody()),
-          bottomNavigationBar: BottomNavBar(),
-        ),
+            backgroundColor: AppColors.lightGrey,
+            appBar: AppBar(
+              backgroundColor: AppColors.lightGrey,
+              elevation: 0,
+              centerTitle: true,
+              automaticallyImplyLeading: false, // We'll handle the leading widget manually
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: AppColors.darkGrey, size: 24),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: const Text(
+                "اتجاه القبلة",
+                style: TextStyle(
+                  color: AppColors.black,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Tajawal',
+                ),
+              ),
+              actions: [
+                Builder(
+                  builder: (context) { // Use Builder to get the context that contains the Cubit
+                    return IconButton(
+                      icon: const Icon(Icons.all_inclusive_outlined, color: AppColors.darkGrey, size: 28),
+                      onPressed: () {
+                        showGeneralDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                          barrierColor: Colors.black.withOpacity(0.5),
+                          transitionDuration: const Duration(milliseconds: 200),
+                          pageBuilder: (context, animation1, animation2) => const SizedBox(),
+                          transitionBuilder: (dialogContext, animation1, animation2, child) {
+                            final curvedAnimation = CurvedAnimation(
+                              parent: animation1,
+                              curve: Curves.easeOut,
+                              reverseCurve: Curves.easeIn,
+                            );
+                            return ScaleTransition(
+                              scale: curvedAnimation,
+                              child: CalibrationDialog(
+                                onDone: () {
+                                  context.read<QiblaCubit>().resetCompass();
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }
+                ),
+              ],
+            ),
+            body: const SafeArea(child: QiblaBody())),
       ),
     );
   }
@@ -194,7 +245,6 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
-          const QiblaAppBar(),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -338,61 +388,6 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
   }
 }
 
-class QiblaAppBar extends StatelessWidget {
-  const QiblaAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final qiblaCubit = context.read<QiblaCubit>();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.all_inclusive_outlined, color: AppColors.darkGrey, size: 28),
-          onPressed: () {
-            showGeneralDialog(
-              context: context,
-              barrierDismissible: true,
-              barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-              barrierColor: Colors.black.withOpacity(0.5),
-              transitionDuration: const Duration(milliseconds: 200),
-              pageBuilder: (context, animation1, animation2) => const SizedBox(),
-              transitionBuilder: (dialogContext, animation1, animation2, child) {
-                final curvedAnimation = CurvedAnimation(
-                  parent: animation1,
-                  curve: Curves.easeOut,
-                  reverseCurve: Curves.easeIn,
-                );
-                return ScaleTransition(
-                  scale: curvedAnimation,
-                  child: CalibrationDialog(
-                    onDone: () {
-                      qiblaCubit.resetCompass();
-                    },
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        const Text(
-          "اتجاه القبلة",
-          style: TextStyle(
-            color: AppColors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Tajawal',
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.arrow_forward_ios, color: AppColors.darkGrey, size: 28),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
-    );
-  }
-}
-
 class LocationCard extends StatelessWidget {
   final double distance;
 
@@ -464,62 +459,6 @@ class LocationCard extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class BottomNavBar extends StatelessWidget {
-  const BottomNavBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            spreadRadius: 1,
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-        child: BottomNavigationBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.grey,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "الرئيسية",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book),
-              label: "الأذكار",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: "الإحصائيات",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: "الإعدادات",
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -15,6 +15,7 @@ class HomeViewModel extends ChangeNotifier {
   // Getters using the new structure
   int get counter => _counters[_currentZekr] ?? 0;
   String get currentZekr => _currentZekr;
+  Map<String, int> get counters => _counters; // Added getter for stats
   double get progress => isLoading ? 0.0 : (counter / goal).clamp(0.0, 1.0);
   bool get isLoading => _isLoading;
 
