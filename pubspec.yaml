@@ -13,15 +13,16 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_bloc: ^9.1.1
   equatable: ^2.0.5
-  vibration: ^1.8.4
+  vibration: ^3.1.7
   cupertino_icons: ^1.0.8
   provider: ^6.0.5
   get: ^4.7.3
   confetti: ^0.8.0
+  lottie: ^3.3.2
 
   # Qibla dependencies
   flutter_compass: ^0.8.0
-  geolocator: ^10.1.0
+  geolocator: ^14.0.2
   vector_math: ^2.1.4
 
 dev_dependencies:
@@ -35,6 +36,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/images/
+    - assets/lottie/
 
   fonts:
     - family: Tajawal
