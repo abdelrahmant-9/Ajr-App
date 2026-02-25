@@ -168,7 +168,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
-          QiblaAppBar(),
+          const QiblaAppBar(),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -293,20 +293,35 @@ class QiblaAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final qiblaCubit = context.read<QiblaCubit>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.all_inclusive, color: AppColors.darkGrey, size: 28),
+          icon: const Icon(Icons.info_outline, color: AppColors.darkGrey, size: 28),
           onPressed: () {
-            showDialog(
+            showGeneralDialog(
               context: context,
-              barrierDismissible: false,
-              builder: (_) => CalibrationDialog(
-                onDone: () {
-                  context.read<QiblaCubit>().resetCompass();
-                },
-              ),
+              barrierDismissible: true,
+              barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+              barrierColor: Colors.black.withOpacity(0.5),
+              transitionDuration: const Duration(milliseconds: 200),
+              pageBuilder: (context, animation1, animation2) => const SizedBox(),
+              transitionBuilder: (dialogContext, animation1, animation2, child) {
+                final curvedAnimation = CurvedAnimation(
+                  parent: animation1,
+                  curve: Curves.easeOut,
+                  reverseCurve: Curves.easeIn,
+                );
+                return ScaleTransition(
+                  scale: curvedAnimation,
+                  child: CalibrationDialog(
+                    onDone: () {
+                      qiblaCubit.resetCompass();
+                    },
+                  ),
+                );
+              },
             );
           },
         ),
