@@ -52,11 +52,11 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Consumer<HomeViewModel>(
       builder: (context, vm, child) {
-        if (!vm.isLoading && vm.model.counter == vm.goal && _previousCount < vm.goal && vm.goal != 0) {
+        if (!vm.isLoading && vm.counter == vm.goal && _previousCount < vm.goal && vm.goal != 0) {
           _confettiController.play();
         }
         if (!vm.isLoading) {
-          _previousCount = vm.model.counter;
+          _previousCount = vm.counter;
         }
 
         return Scaffold(
@@ -110,8 +110,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                             );
                           },
                           child: Text(
-                            _toArabicNumbers(vm.isLoading ? "0" : vm.model.counter.toString()),
-                            key: ValueKey<int>(vm.isLoading ? 0 : vm.model.counter),
+                            _toArabicNumbers(vm.isLoading ? "0" : vm.counter.toString()),
+                            key: ValueKey<int>(vm.isLoading ? 0 : vm.counter),
                             style: const TextStyle(
                               fontSize: 80,
                               fontFamily: 'Tajawal',
@@ -157,9 +157,9 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${_toArabicNumbers(vm.isLoading ? "0" : vm.model.counter.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
+                                    '${_toArabicNumbers(vm.isLoading ? "0" : vm.counter.toString())} / ${_toArabicNumbers(vm.goal.toString())}',
                                     style: TextStyle(
-                                      color: (!vm.isLoading && vm.model.counter >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
+                                      color: (!vm.isLoading && vm.counter >= vm.goal && vm.goal != 0) ? AppColors.primary : AppColors.darkGrey,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 16,
                                       fontFamily: 'Tajawal',
@@ -263,7 +263,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                           children: [
                             _buildChip("السجل", Icons.history, () {}),
                             const SizedBox(width: 20),
-                            _buildChip("تصفير", Icons.refresh, !vm.isLoading && vm.model.counter == 0 ? null : () {
+                            _buildChip("تصفير", Icons.refresh, !vm.isLoading && vm.counter == 0 ? null : () {
                               _showResetConfirmationDialog(context, vm);
                             }),
                           ],
@@ -317,63 +317,63 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                   left: 20,
                   right: 20,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Search
-                    TextField(
-                      controller: searchController,
-                      textAlign: TextAlign.right,
-                      decoration: const InputDecoration(
-                        hintText: "ابحث عن ذكر...",
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide.none,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Search
+                      TextField(
+                        controller: searchController,
+                        textAlign: TextAlign.right,
+                        decoration: const InputDecoration(
+                          hintText: "ابحث عن ذكر...",
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.lightGrey,
                         ),
-                        filled: true,
-                        fillColor: AppColors.lightGrey,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          filtered = viewModel.azkar
-                              .where((e) => e.contains(value))
-                              .toList();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Add custom
-                    TextField(
-                      textAlign: TextAlign.right,
-                      decoration: const InputDecoration(
-                        hintText: "إضافة ذكر مخصص",
-                        prefixIcon: Icon(Icons.add),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: AppColors.lightGrey,
-                      ),
-                      onSubmitted: (value) {
-                        if (value.trim().isNotEmpty) {
-                          viewModel.addCustomZekr(value.trim());
-                          searchController.clear();
+                        onChanged: (value) {
                           setState(() {
-                            filtered = viewModel.azkar;
+                            filtered = viewModel.azkar
+                                .where((e) => e.contains(value))
+                                .toList();
                           });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 20),
+                        },
+                      ),
+                      const SizedBox(height: 15),
 
-                    // List
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.3,
-                      child: ReorderableListView(
+                      // Add custom
+                      TextField(
+                        textAlign: TextAlign.right,
+                        decoration: const InputDecoration(
+                          hintText: "إضافة ذكر مخصص",
+                          prefixIcon: Icon(Icons.add),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.lightGrey,
+                        ),
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            viewModel.addCustomZekr(value.trim());
+                            searchController.clear();
+                            setState(() {
+                              filtered = viewModel.azkar;
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // List
+                      ReorderableListView(
                         shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         onReorder: (oldIndex, newIndex) {
                           setState(() {
                             viewModel.reorderZekr(oldIndex, newIndex);
@@ -422,8 +422,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                           );
                         }).toList(),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

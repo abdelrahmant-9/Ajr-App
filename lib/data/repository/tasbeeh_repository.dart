@@ -15,7 +15,12 @@ class TasbeehRepository {
         if (localModel != null) {
           await remote.save(localModel);
         }
-        return localModel ?? TasbeehModel(counter: 0, lastUpdated: DateTime.now());
+        return localModel ??
+            TasbeehModel(
+              counters: {"سبحان الله": 0},
+              currentZekr: "سبحان الله",
+              lastUpdated: DateTime.now(),
+            );
       } else {
         if (localModel == null ||
             remoteModel.lastUpdated.isAfter(localModel.lastUpdated)) {
@@ -26,7 +31,11 @@ class TasbeehRepository {
       }
     } catch (_) {
       return localModel ??
-          TasbeehModel(counter: 0, lastUpdated: DateTime.now());
+          TasbeehModel(
+            counters: {"سبحان الله": 0},
+            currentZekr: "سبحان الله",
+            lastUpdated: DateTime.now(),
+          );
     }
   }
 
