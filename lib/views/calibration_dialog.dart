@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -50,7 +49,7 @@ class CalibrationDialog extends StatelessWidget {
                   onDone();
                 },
                 child: const Text(
-                  "تــم",
+                  "معايـرة",
                   style: TextStyle(
                     fontFamily: 'Tajawal',
                     color: Colors.white,

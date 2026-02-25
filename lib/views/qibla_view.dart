@@ -8,6 +8,21 @@ import '../utils/app_colors.dart';
 import '../blocs/qibla/qibla_cubit.dart';
 import 'calibration_dialog.dart';
 
+// Helper function to convert numbers to Arabic numerals
+String _toArabicNumbers(String number) {
+  return number
+      .replaceAll('0', '٠')
+      .replaceAll('1', '١')
+      .replaceAll('2', '٢')
+      .replaceAll('3', '٣')
+      .replaceAll('4', '٤')
+      .replaceAll('5', '٥')
+      .replaceAll('6', '٦')
+      .replaceAll('7', '٧')
+      .replaceAll('8', '٨')
+      .replaceAll('9', '٩');
+}
+
 class QiblaView extends StatelessWidget {
   const QiblaView({super.key});
 
@@ -161,11 +176,11 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
 
     switch (widget.alignment) {
       case QiblaAlignment.aligned:
-        arrowColor = Colors.green;
+        arrowColor = AppColors.emaraldgreen;
         alignmentText = "أنت الآن باتجاه القبلة";
         break;
       case QiblaAlignment.close:
-        arrowColor = Colors.lightGreen;
+        arrowColor = AppColors.lightgreen;
         alignmentText = "اقتربت من اتجاه القبلة";
         break;
       case QiblaAlignment.far:
@@ -185,7 +200,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "${widget.compassHeading.toStringAsFixed(0)}°",
+                  "${_toArabicNumbers(widget.compassHeading.toStringAsFixed(0))}°",
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 48,
@@ -213,12 +228,12 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white,
+                          color: AppColors.grey,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 20,
+                              color: Colors.grey.withOpacity(0.7),
+                              spreadRadius: 2,
+                              blurRadius: 40,
                             ),
                           ],
                         ),
@@ -234,7 +249,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                         },
                         child: Icon(
                           Icons.navigation_rounded,
-                          size: 200,
+                          size: 180,
                           color: arrowColor,
                         ),
                       ),
@@ -249,7 +264,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                       ),
                       // Kaaba icon at the top
                       Positioned(
-                        top: 25,
+                        top: 23,
                         child: Skeleton.leaf(
                           child: Container(
                             padding: const EdgeInsets.all(8),
@@ -257,7 +272,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                               color: arrowColor, // Match arrow color
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: const Icon(Icons.mosque, color: Colors.white, size: 22),
+                            child: const Icon(Icons.mosque_rounded, color: Colors.white, size: 22),
                           ),
                         ),
                       ),
@@ -279,7 +294,7 @@ class _QiblahCompassState extends State<QiblahCompass> with SingleTickerProvider
                   "يرجى وضع الهاتف بشكل مسطح لأفضل دقة",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.grey,
+                    color: AppColors.darkGrey,
                     fontSize: 14,
                     fontFamily: 'Tajawal',
                   ),
@@ -311,7 +326,7 @@ class QiblaAppBar extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.info_outline, color: AppColors.darkGrey, size: 28),
+          icon: const Icon(Icons.all_inclusive_outlined, color: AppColors.darkGrey, size: 28),
           onPressed: () {
             showGeneralDialog(
               context: context,
@@ -348,7 +363,7 @@ class QiblaAppBar extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.arrow_forward, color: AppColors.darkGrey, size: 28),
+          icon: const Icon(Icons.arrow_forward_ios, color: AppColors.darkGrey, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ],
@@ -409,14 +424,14 @@ class LocationCard extends StatelessWidget {
               const Text(
                 "المسافة",
                 style: TextStyle(
-                  color: AppColors.grey,
+                  color: AppColors.darkGrey,
                   fontFamily: 'Tajawal',
                   fontSize: 12,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                (distance > 0) ? "${distance.toStringAsFixed(0)} كم" : "...",
+                (distance > 0) ? "${_toArabicNumbers(distance.toStringAsFixed(0))} كم" : "...",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -464,33 +479,24 @@ class BottomNavBar extends StatelessWidget {
           unselectedItemColor: AppColors.grey,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          currentIndex: 0, // Assuming this is the 'home' or 'main' screen in the context of the bottom nav
-          selectedLabelStyle: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontFamily: 'Tajawal'),
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
+              icon: Icon(Icons.home),
               label: "الرئيسية",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
+              icon: Icon(Icons.menu_book),
               label: "الأذكار",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
+              icon: Icon(Icons.bar_chart),
               label: "الإحصائيات",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
+              icon: Icon(Icons.settings),
               label: "الإعدادات",
             ),
           ],
-          onTap: (index) {
-            if (index == 0) {
-              Navigator.pop(context);
-            }
-            // Handle other taps if necessary
-          },
         ),
       ),
     );
