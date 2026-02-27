@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../data/repository/tasbeeh_repository.dart';
+import '../data/repository/ajr_repository.dart';
 
 class SyncService {
-  final _repository = TasbeehRepository();
+  final _repository = AjrRepository();
   StreamSubscription? _subscription;
 
   void start() {
-    print("SyncService started 👑");
+    print("SyncService started");
 
     _subscription =
         Connectivity().onConnectivityChanged.listen((result) async {

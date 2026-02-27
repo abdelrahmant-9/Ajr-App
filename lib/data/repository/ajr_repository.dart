@@ -1,12 +1,12 @@
-import '../local/tasbeeh_local_data_source.dart';
-import '../remote/tasbeeh_remote_data_source.dart';
-import '../../models/tasbeeh_model.dart';
+import '../local/ajr_local_data_source.dart';
+import '../remote/ajr_remote_data_source.dart';
+import '../../models/ajr_model.dart';
 
-class TasbeehRepository {
-  final local = TasbeehLocalDataSource();
-  final remote = TasbeehRemoteDataSource();
+class AjrRepository {
+  final local = AjrLocalDataSource();
+  final remote = AjrRemoteDataSource();
 
-  Future<TasbeehModel> get() async {
+  Future<AjrModel> get() async {
     final localModel = local.load();
     try {
       final remoteModel = await remote.load();
@@ -16,7 +16,7 @@ class TasbeehRepository {
           await remote.save(localModel);
         }
         return localModel ??
-            TasbeehModel(
+            AjrModel(
               counters: {"سبحان الله": 0},
               currentZekr: "سبحان الله",
               lastUpdated: DateTime.now(),
@@ -31,7 +31,7 @@ class TasbeehRepository {
       }
     } catch (_) {
       return localModel ??
-          TasbeehModel(
+          AjrModel(
             counters: {"سبحان الله": 0},
             currentZekr: "سبحان الله",
             lastUpdated: DateTime.now(),
@@ -39,7 +39,7 @@ class TasbeehRepository {
     }
   }
 
-  Future<void> save(TasbeehModel model) async {
+  Future<void> save(AjrModel model) async {
     local.save(model);
 
     try {

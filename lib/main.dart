@@ -20,7 +20,7 @@ void main() async {
   await FirebaseAuth.instance.signInAnonymously();
 
   await Hive.initFlutter();
-  await Hive.openBox('tasbeehBox');
+  await Hive.openBox('ajrBox');
 
   SyncService().start();
 

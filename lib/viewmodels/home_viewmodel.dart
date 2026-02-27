@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import '../data/repository/tasbeeh_repository.dart';
-import '../models/tasbeeh_model.dart';
+import '../data/repository/ajr_repository.dart';
+import '../models/ajr_model.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final repository = TasbeehRepository();
+  final repository = AjrRepository();
 
   // New data structure
   Map<String, int> _counters = {};
@@ -30,7 +30,7 @@ class HomeViewModel extends ChangeNotifier {
 
   void _saveModel() {
     repository.save(
-      TasbeehModel(
+      AjrModel(
         counters: _counters,
         currentZekr: _currentZekr,
         lastUpdated: DateTime.now(),
@@ -39,7 +39,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void _loadAzkar() {
-    final box = Hive.box('tasbeehBox');
+    final box = Hive.box('ajrBox');
     _azkar = box.get('azkar', defaultValue: [
       "سبحان الله",
       "الحمد لله",
@@ -50,14 +50,14 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void _saveAzkar() {
-    Hive.box('tasbeehBox').put('azkar', _azkar);
+    Hive.box('ajrBox').put('azkar', _azkar);
     notifyListeners();
   }
 
   Future<void> init() async {
     _isLoading = true;
     try {
-      final TasbeehModel model = await repository.get();
+      final AjrModel model = await repository.get();
       _counters = model.counters;
       _currentZekr = model.currentZekr;
     } catch (e) {

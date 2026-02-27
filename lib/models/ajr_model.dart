@@ -1,9 +1,9 @@
-class TasbeehModel {
+class AjrModel {
   final Map<String, int> counters;
   final String currentZekr;
   final DateTime lastUpdated;
 
-  TasbeehModel({
+  AjrModel({
     required this.counters,
     required this.currentZekr,
     required this.lastUpdated,
@@ -17,8 +17,8 @@ class TasbeehModel {
     };
   }
 
-  factory TasbeehModel.fromMap(Map<String, dynamic> map) {
-    return TasbeehModel(
+  factory AjrModel.fromMap(Map<String, dynamic> map) {
+    return AjrModel(
       counters: Map<String, int>.from(map["counters"]),
       currentZekr: map["currentZekr"],
       lastUpdated: DateTime.parse(map["lastUpdated"]),

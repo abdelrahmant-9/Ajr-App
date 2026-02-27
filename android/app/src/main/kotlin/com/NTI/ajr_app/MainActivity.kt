@@ -1,4 +1,4 @@
-package com.NTI.tasbeeh_app
+package com.NTI.ajr_app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,24 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../models/tasbeeh_model.dart';
+import '../../models/ajr_model.dart';
 
-class TasbeehRemoteDataSource {
+class AjrRemoteDataSource {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
 
-  Future<void> save(TasbeehModel model) async {
+  Future<void> save(AjrModel model) async {
     final uid = _auth.currentUser!.uid;
 
     await _firestore.collection("users").doc(uid).set(model.toMap());
   }
 
-  Future<TasbeehModel?> load() async {
+  Future<AjrModel?> load() async {
     final uid = _auth.currentUser!.uid;
     final doc =
         await _firestore.collection("users").doc(uid).get();
 
     if (!doc.exists) return null;
 
-    return TasbeehModel.fromMap(doc.data()!);
+    return AjrModel.fromMap(doc.data()!);
   }
 }

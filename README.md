@@ -1,6 +1,6 @@
-# 
+# Ajr | أجر
 
-A new Flutter project.
+A new Flutter project for a Ajr application.
 
 ## Getting Started
 
