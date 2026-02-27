@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:ajr/views/main_layout.dart'; // Changed back to MainLayout
+import 'package:hijri/hijri_calendar.dart'; // Import Hijri Calendar
+import 'package:ajr/views/main_layout.dart';
 import 'firebase_options.dart';
 import 'viewmodels/home_viewmodel.dart';
 import 'services/sync_service.dart';
@@ -12,11 +13,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Set Hijri calendar to Arabic
+  HijriCalendar.setLocal('ar');
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 👑 تسجيل دخول مجهول
+  // 👑 Anonymous Sign-In
   await FirebaseAuth.instance.signInAnonymously();
 
   await Hive.initFlutter();
@@ -65,7 +69,7 @@ class MyApp extends StatelessWidget {
             labelSmall: TextStyle(fontFamily: 'Tajawal'),
           ),
         ),
-        home: const MainLayout(), // Changed back to MainLayout
+        home: const MainLayout(),
       ),
     );
   }

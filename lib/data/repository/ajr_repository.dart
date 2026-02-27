@@ -20,6 +20,10 @@ class AjrRepository {
               counters: {"سبحان الله": 0},
               currentZekr: "سبحان الله",
               lastUpdated: DateTime.now(),
+              todayCounters: {"سبحان الله": 0},
+              lastResetDate: DateTime.now(),
+              usageDates: [],
+              dailyTotals: {}, // Added missing field
             );
       } else {
         if (localModel == null ||
@@ -35,6 +39,10 @@ class AjrRepository {
             counters: {"سبحان الله": 0},
             currentZekr: "سبحان الله",
             lastUpdated: DateTime.now(),
+            todayCounters: {"سبحان الله": 0},
+            lastResetDate: DateTime.now(),
+            usageDates: [],
+            dailyTotals: {}, // Added missing field
           );
     }
   }
