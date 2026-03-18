@@ -77,7 +77,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             CircleAvatar(
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                               child: IconButton(
                                 icon: const Icon(Icons.explore_outlined, color: AppColors.primary),
                                 onPressed: () {
@@ -88,9 +88,8 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 },
                               ),
                             ),
-                            // ── Profile icon — long press → Debug Dashboard ──
                             CircleAvatar(
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                               child: GestureDetector(
                                 onLongPress: () => Navigator.push(
                                   context,
@@ -112,10 +111,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                           transitionBuilder: (Widget child, Animation<double> animation) {
                             return ScaleTransition(
                               scale: animation,
-                              child: FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              ),
+                              child: FadeTransition(opacity: animation, child: child),
                             );
                           },
                           child: Text(
@@ -129,14 +125,12 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                             ),
                           ),
                         ),
-
-                        /// Zekr Title (Button)
                         GestureDetector(
                           onTap: () => _showZekrPicker(context),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryVeryLight.withOpacity(0.5),
+                              color: AppColors.primaryVeryLight.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(25),
                             ),
                             child: AnimatedSwitcher(
@@ -156,7 +150,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 30),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -204,7 +197,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 height: 300,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.primary.withOpacity(0.05),
+                                  color: AppColors.primary.withValues(alpha: 0.05),
                                 ),
                               ),
                               Container(
@@ -212,7 +205,10 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 height: 250,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 2),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(alpha: 0.1),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                               GestureDetector(
@@ -235,7 +231,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                           color: AppColors.primary,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: AppColors.primary.withOpacity(0.3 * _animationController.value),
+                                              color: AppColors.primary.withValues(alpha: 0.3 * _animationController.value),
                                               blurRadius: 30 * _animationController.value,
                                               spreadRadius: 15 * _animationController.value,
                                             ),
@@ -331,14 +327,12 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                   );
                   return;
                 }
-
                 viewModel.addCustomZekr(value);
                 addZekrController.clear();
                 searchController.clear();
                 setState(() {
                   filtered = List.from(viewModel.azkar);
                 });
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("تم إضافة الذكر بنجاح", style: TextStyle(fontFamily: 'Tajawal')),
@@ -363,7 +357,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Search
                       TextField(
                         controller: searchController,
                         textAlign: TextAlign.right,
@@ -386,8 +379,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         },
                       ),
                       const SizedBox(height: 15),
-
-                      // Add custom
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -421,8 +412,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                         ],
                       ),
                       const SizedBox(height: 20),
-
-                      // List
                       ReorderableListView(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -490,7 +479,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: AppColors.black.withOpacity(0.5),
+      barrierColor: AppColors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (BuildContext buildContext, Animation<double> animation,
           Animation<double> secondaryAnimation) {
@@ -498,9 +487,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
           textDirection: TextDirection.rtl,
           child: AlertDialog(
             backgroundColor: AppColors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
             title: const Text('تصفير العداد',
                 style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.bold, color: AppColors.black)),
             content: const Text('هل أنت متأكد من تصفير العداد؟',
@@ -509,31 +496,19 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.grey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 child: const Text('إلغاء',
-                    style: TextStyle(
-                        fontFamily: 'Tajawal',
-                        color: AppColors.black,
-                        fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  Navigator.of(buildContext).pop();
-                },
+                    style: TextStyle(fontFamily: 'Tajawal', color: AppColors.black, fontWeight: FontWeight.bold)),
+                onPressed: () => Navigator.of(buildContext).pop(),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                 ),
                 child: const Text('تصفير العداد',
-                    style: TextStyle(
-                        fontFamily: 'Tajawal',
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontFamily: 'Tajawal', color: AppColors.white, fontWeight: FontWeight.bold)),
                 onPressed: () {
                   vm.reset();
                   Navigator.of(buildContext).pop();
@@ -546,11 +521,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         return ScaleTransition(
-          scale: CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOut,
-            reverseCurve: Curves.easeIn,
-          ),
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOut, reverseCurve: Curves.easeIn),
           child: child,
         );
       },

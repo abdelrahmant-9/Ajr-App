@@ -127,9 +127,11 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
       child: Stack(
         children: [
           Positioned(
-            top: -24, left: -24,
+            top: -24,
+            left: -24,
             child: Container(
-              width: 100, height: 100,
+              width: 100,
+              height: 100,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0x18FFFFFF),
@@ -161,8 +163,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
               GestureDetector(
                 onTap: () => _openCategory(AzkarCategory.morning),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 22, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
@@ -207,8 +208,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEF4FF),
                   borderRadius: BorderRadius.circular(12),
@@ -253,8 +253,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                     ),
                     child: Center(
                       child: done
-                          ? const Icon(Icons.check,
-                          color: Colors.white, size: 20)
+                          ? const Icon(Icons.check, color: Colors.white, size: 20)
                           : const Text(
                         '···',
                         style: TextStyle(
@@ -370,8 +369,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                             color: item.iconBg,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(item.icon,
-                              color: item.iconColor, size: 24),
+                          child: Icon(item.icon, color: item.iconColor, size: 24),
                         ),
                         if (item.done)
                           Positioned(
@@ -410,22 +408,6 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
       ],
     );
   }
-}
-
-class _CategoryConfig {
-  final AzkarCategory category;
-  final IconData icon;
-  final Color iconBg;
-  final Color iconColor;
-  final String progressKey;
-
-  const _CategoryConfig({
-    required this.category,
-    required this.icon,
-    required this.iconBg,
-    required this.iconColor,
-    required this.progressKey,
-  });
 }
 
 class _CategoryGridItem {
