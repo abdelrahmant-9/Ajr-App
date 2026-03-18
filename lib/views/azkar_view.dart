@@ -49,42 +49,37 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
   void _openCategory(AzkarCategory category) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AzkarListView(category: category),
-      ),
+      MaterialPageRoute(builder: (_) => AzkarListView(category: category)),
     );
     _loadProgress();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 12),
-                      _buildHeroBanner(),
-                      const SizedBox(height: 14),
-                      _buildDailyProgress(),
-                      const SizedBox(height: 20),
-                      _buildCategoriesSection(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 12),
+                    _buildHeroBanner(),
+                    const SizedBox(height: 14),
+                    _buildDailyProgress(),
+                    const SizedBox(height: 20),
+                    _buildCategoriesSection(),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -93,11 +88,10 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          SizedBox(width: 22),
-          Text(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          const Text(
             'الأذكار',
             style: TextStyle(
               fontFamily: 'Tajawal',
@@ -106,7 +100,15 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
               color: Color(0xFF1A1A2E),
             ),
           ),
-          Icon(Icons.arrow_forward, color: Color(0xFFBBBBCC), size: 22),
+          // السهم على اليمين دايماً
+          Positioned(
+            right: 0,
+            child: const Icon(
+              Icons.arrow_forward_ios,
+              color: Color(0xFFBBBBCC),
+              size: 18,
+            ),
+          ),
         ],
       ),
     );
@@ -138,11 +140,13 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
               ),
             ),
           ),
+          // المحتوى محاذي لليمين
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               const Text(
                 'صباح الخير، لا تنسَ ذكر الله',
+                textAlign: TextAlign.right,
                 style: TextStyle(
                   fontFamily: 'Tajawal',
                   fontSize: 18,
@@ -153,6 +157,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
               const SizedBox(height: 5),
               const Text(
                 'ابدأ يومك ببركة الأذكار وطمأنينة القلب',
+                textAlign: TextAlign.right,
                 style: TextStyle(
                   fontFamily: 'Tajawal',
                   fontSize: 13,
@@ -160,21 +165,25 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                 ),
               ),
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => _openCategory(AzkarCategory.morning),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: const Text(
-                    'ابدأ أذكار الصباح',
-                    style: TextStyle(
-                      fontFamily: 'Tajawal',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF4F8EF7),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => _openCategory(AzkarCategory.morning),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: const Text(
+                      'ابدأ أذكار الصباح',
+                      style: TextStyle(
+                        fontFamily: 'Tajawal',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF4F8EF7),
+                      ),
                     ),
                   ),
                 ),
@@ -187,6 +196,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
   }
 
   Widget _buildDailyProgress() {
+    // الترتيب: الفجر على اليمين، الصلاة على اليسار
     final steps = [
       {'label': 'الفجر', 'cat': AzkarCategory.morning},
       {'label': 'الصباح', 'cat': AzkarCategory.morning},
@@ -204,8 +214,8 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
       ),
       child: Column(
         children: [
+          // العنوان على اليمين، البادج على اليسار
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -223,6 +233,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                   ),
                 ),
               ),
+              const Spacer(),
               const Text(
                 'إنجاز اليوم',
                 style: TextStyle(
@@ -235,9 +246,10 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
             ],
           ),
           const SizedBox(height: 14),
+          // الخطوات: الفجر على اليمين
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: steps.reversed.map((step) {
+            children: steps.map((step) {
               final cat = step['cat'] as AzkarCategory;
               final done = _progress[cat] ?? false;
               return Column(
@@ -325,6 +337,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
           padding: EdgeInsets.only(right: 20, bottom: 14),
           child: Text(
             'التصنيفات',
+            textAlign: TextAlign.right,
             style: TextStyle(
               fontFamily: 'Tajawal',
               fontSize: 16,
@@ -358,35 +371,41 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                 ),
                 padding: const EdgeInsets.fromLTRB(14, 18, 14, 14),
                 child: Column(
+                  // الأيقونة في أعلى اليمين، النص في أسفل اليمين
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: item.iconBg,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(item.icon, color: item.iconColor, size: 24),
-                        ),
-                        if (item.done)
-                          Positioned(
-                            top: 0,
-                            left: 0,
-                            child: Container(
-                              width: 18,
-                              height: 18,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF43A047),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.check,
-                                  color: Colors.white, size: 11),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: item.iconBg,
+                              borderRadius: BorderRadius.circular(14),
                             ),
+                            child: Icon(item.icon,
+                                color: item.iconColor, size: 24),
                           ),
-                      ],
+                          if (item.done)
+                            Positioned(
+                              top: -4,
+                              left: -4,
+                              child: Container(
+                                width: 18,
+                                height: 18,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF43A047),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.check,
+                                    color: Colors.white, size: 11),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                     const Spacer(),
                     Text(

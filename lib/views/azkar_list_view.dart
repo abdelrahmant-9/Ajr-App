@@ -148,6 +148,7 @@ class _AzkarListViewState extends State<AzkarListView> {
                 ? const Color(0xFF43A047)
                 : const Color(0xFF4F8EF7),
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -197,54 +198,48 @@ class _ZekrCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                if (done)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.check, size: 13, color: Color(0xFF43A047)),
-                        SizedBox(width: 4),
-                        Text(
-                          'تم',
-                          style: TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF43A047),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF4FF),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _formatCount(remaining),
-                      style: const TextStyle(
+            if (done)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  // في RTL النص قبل الأيقونة
+                  children: const [
+                    Text(
+                      'تم',
+                      style: TextStyle(
                         fontFamily: 'Tajawal',
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF4F8EF7),
+                        color: Color(0xFF43A047),
                       ),
                     ),
+                    SizedBox(width: 4),
+                    Icon(Icons.check, size: 13, color: Color(0xFF43A047)),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF4FF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _formatCount(remaining),
+                  style: const TextStyle(
+                    fontFamily: 'Tajawal',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF4F8EF7),
                   ),
-              ],
-            ),
+                ),
+              ),
           ],
         ),
       ),
