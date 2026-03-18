@@ -7,28 +7,28 @@ class HomeViewModel extends ChangeNotifier {
   final repository = AjrRepository();
 
   Map<String, int> _counters = {};
-  Map<String, int> _todayCounters = {}; 
+  Map<String, int> _todayCounters = {};
   String _currentZekr = "سبحان الله";
   DateTime _lastResetDate = DateTime.now();
   List<DateTime> _usageDates = [];
-  Map<String, int> _dailyTotals = {}; // New field
+  Map<String, int> _dailyTotals = {};
 
   bool _isLoading = true;
 
   // Getters
   int get counter => _counters[_currentZekr] ?? 0;
-  int get todayCounter => _todayCounters[_currentZekr] ?? 0; 
+  int get todayCounter => _todayCounters[_currentZekr] ?? 0;
   String get currentZekr => _currentZekr;
-  Map<String, int> get counters => _counters; 
-  Map<String, int> get todayCounters => _todayCounters; 
-  Map<String, int> get dailyTotals => _dailyTotals; // Getter for daily totals
+  Map<String, int> get counters => _counters;
+  Map<String, int> get todayCounters => _todayCounters;
+  Map<String, int> get dailyTotals => _dailyTotals;
   double get progress => isLoading ? 0.0 : (todayCounter / goal).clamp(0.0, 1.0);
   bool get isLoading => _isLoading;
 
   // Stats Getters
   int get streak {
     if (_usageDates.isEmpty) return 0;
-    _usageDates.sort((a, b) => b.compareTo(a)); 
+    _usageDates.sort((a, b) => b.compareTo(a));
     int currentStreak = 0;
     DateTime today = DateTime.now();
     DateTime currentDate = DateTime(today.year, today.month, today.day);
@@ -42,7 +42,7 @@ class HomeViewModel extends ChangeNotifier {
         _usageDates.first.day == currentDate.subtract(const Duration(days: 1)).day) {
       currentStreak++;
     } else {
-      return 0; 
+      return 0;
     }
 
     for (int i = 0; i < _usageDates.length - 1; i++) {
@@ -50,48 +50,74 @@ class HomeViewModel extends ChangeNotifier {
       if (diff.inDays == 1) {
         currentStreak++;
       } else if (diff.inDays > 1) {
-        break; 
+        break;
       }
     }
     return currentStreak;
   }
 
   int get dailyAverage {
-      if (_usageDates.isEmpty) return 0;
-      final totalTasbeeh = _counters.values.fold(0, (sum, item) => sum + item);
-      final uniqueDays = _usageDates.map((d) => DateTime(d.year, d.month, d.day)).toSet().length;
-      return uniqueDays > 0 ? (totalTasbeeh / uniqueDays).round() : 0;
+    if (_usageDates.isEmpty) return 0;
+    final totalTasbeeh = _counters.values.fold(0, (sum, item) => sum + item);
+    final uniqueDays =
+        _usageDates.map((d) => DateTime(d.year, d.month, d.day)).toSet().length;
+    return uniqueDays > 0 ? (totalTasbeeh / uniqueDays).round() : 0;
   }
 
   Map<int, double> get weeklyActivity {
     final Map<int, double> data = {};
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    // Find the most recent Friday (start of the week)
-    int daysSinceFriday = now.weekday - DateTime.friday;
-    if (daysSinceFriday < 0) {
-      daysSinceFriday += 7;
+    // تحديد index اليوم الحالي في الأسبوع (يبدأ من الجمعة = 0)
+    // DateTime.weekday: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
+    int todayIndex;
+    switch (now.weekday) {
+      case DateTime.friday:
+        todayIndex = 0;
+        break;
+      case DateTime.saturday:
+        todayIndex = 1;
+        break;
+      case DateTime.sunday:
+        todayIndex = 2;
+        break;
+      case DateTime.monday:
+        todayIndex = 3;
+        break;
+      case DateTime.tuesday:
+        todayIndex = 4;
+        break;
+      case DateTime.wednesday:
+        todayIndex = 5;
+        break;
+      case DateTime.thursday:
+        todayIndex = 6;
+        break;
+      default:
+        todayIndex = 0;
     }
-    final DateTime startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysSinceFriday));
 
-    // Populate data for the 7 days of the week
+    // أول يوم في الأسبوع (الجمعة الماضية أو اليوم لو جمعة)
+    final DateTime startOfWeek = today.subtract(Duration(days: todayIndex));
+
     for (int i = 0; i < 7; i++) {
-        final date = startOfWeek.add(Duration(days: i));
-        final dateKey = date.toIso8601String().substring(0, 10);
+      final date = startOfWeek.add(Duration(days: i));
+      final dateKey = date.toIso8601String().substring(0, 10);
 
-        // Check if the date is today
-        if (date.year == now.year && date.month == now.month && date.day == now.day) {
-            // For today, get the sum from _todayCounters
-            data[i] = (_todayCounters.values.fold(0, (sum, val) => sum + val)).toDouble();
-        } else {
-            // For past days, get the value from _dailyTotals
-            data[i] = (_dailyTotals[dateKey] ?? 0).toDouble();
-        }
+      if (date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day) {
+        // اليوم الحالي — من _todayCounters
+        data[i] = (_todayCounters.values.fold(0, (sum, val) => sum + val)).toDouble();
+      } else {
+        // أيام سابقة — من _dailyTotals
+        data[i] = (_dailyTotals[dateKey] ?? 0).toDouble();
+      }
     }
 
     return data;
   }
-
 
   final int goal = 100;
 
@@ -108,10 +134,10 @@ class HomeViewModel extends ChangeNotifier {
         counters: _counters,
         currentZekr: _currentZekr,
         lastUpdated: DateTime.now(),
-        todayCounters: _todayCounters, 
+        todayCounters: _todayCounters,
         lastResetDate: _lastResetDate,
         usageDates: _usageDates,
-        dailyTotals: _dailyTotals, // Save daily totals
+        dailyTotals: _dailyTotals,
       ),
     );
   }
@@ -131,17 +157,18 @@ class HomeViewModel extends ChangeNotifier {
     Hive.box('ajrBox').put('azkar', _azkar);
     notifyListeners();
   }
-  
+
   void _resetTodayCountersIfNeeded() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final lastReset = DateTime(_lastResetDate.year, _lastResetDate.month, _lastResetDate.day);
+    final lastReset =
+    DateTime(_lastResetDate.year, _lastResetDate.month, _lastResetDate.day);
 
     if (today.isAfter(lastReset)) {
-      // Save yesterday's total before resetting
-      final yesterdayTotal = _todayCounters.values.fold(0, (sum, item) => sum + item);
+      final yesterdayTotal =
+      _todayCounters.values.fold(0, (sum, item) => sum + item);
       if (yesterdayTotal > 0) {
-        final yesterdayKey = lastReset.toIso8601String().substring(0, 10); // Use YYYY-MM-DD as key
+        final yesterdayKey = lastReset.toIso8601String().substring(0, 10);
         _dailyTotals[yesterdayKey] = yesterdayTotal;
       }
 
@@ -156,11 +183,13 @@ class HomeViewModel extends ChangeNotifier {
   void _trackUsage() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    if (!_usageDates.any((date) => date.year == today.year && date.month == today.month && date.day == today.day)) {
+    if (!_usageDates.any((date) =>
+    date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day)) {
       _usageDates.add(today);
     }
   }
-
 
   Future<void> init() async {
     _isLoading = true;
@@ -168,14 +197,13 @@ class HomeViewModel extends ChangeNotifier {
       final AjrModel model = await repository.get();
       _counters = model.counters;
       _currentZekr = model.currentZekr;
-      _todayCounters = model.todayCounters ?? {}; 
-      _lastResetDate = model.lastResetDate ?? DateTime.now();
-      _usageDates = model.usageDates ?? [];
-      _dailyTotals = model.dailyTotals ?? {}; // Load daily totals
+      _todayCounters = model.todayCounters;
+      _lastResetDate = model.lastResetDate;
+      _usageDates = model.usageDates;
+      _dailyTotals = model.dailyTotals;
 
       _resetTodayCountersIfNeeded();
       _trackUsage();
-      
     } catch (e) {
       _counters = {};
       _todayCounters = {};
@@ -198,11 +226,9 @@ class HomeViewModel extends ChangeNotifier {
 
   void changeZekr(String newZekr) {
     if (_currentZekr == newZekr) return;
-
     _currentZekr = newZekr;
     _counters.putIfAbsent(newZekr, () => 0);
     _todayCounters.putIfAbsent(newZekr, () => 0);
-
     notifyListeners();
     _saveModel();
   }
@@ -230,9 +256,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void reorderZekr(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
+    if (newIndex > oldIndex) newIndex -= 1;
     final item = _azkar.removeAt(oldIndex);
     _azkar.insert(newIndex, item);
     _saveAzkar();
@@ -240,7 +264,7 @@ class HomeViewModel extends ChangeNotifier {
 
   void increment() {
     _counters[_currentZekr] = counter + 1;
-    _todayCounters[_currentZekr] = todayCounter + 1; 
+    _todayCounters[_currentZekr] = todayCounter + 1;
     _trackUsage();
     notifyListeners();
     _saveModel();

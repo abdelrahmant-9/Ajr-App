@@ -6,6 +6,7 @@ import 'package:ajr/views/qibla_view.dart';
 import 'package:vibration/vibration.dart';
 import '../utils/app_colors.dart';
 import '../viewmodels/home_viewmodel.dart';
+import 'debug_dashboard.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -87,11 +88,20 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 },
                               ),
                             ),
+                            // ── Profile icon — long press → Debug Dashboard ──
                             CircleAvatar(
                               backgroundColor: AppColors.primary.withOpacity(0.1),
-                              child: IconButton(
-                                icon: const Icon(Icons.person_outline, color: AppColors.primary),
-                                onPressed: () {},
+                              child: GestureDetector(
+                                onLongPress: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const DebugDashboard(),
+                                  ),
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.person_outline, color: AppColors.primary),
+                                  onPressed: () {},
+                                ),
                               ),
                             ),
                           ],
@@ -308,7 +318,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
       builder: (_) {
         return StatefulBuilder(
           builder: (context, setState) {
-            void _addZekr() {
+            void addZekr() {
               final value = addZekrController.text.trim();
               if (value.isNotEmpty) {
                 if (viewModel.azkar.any((e) => e.toLowerCase() == value.toLowerCase())) {
@@ -394,7 +404,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                                 filled: true,
                                 fillColor: AppColors.lightGrey,
                               ),
-                              onSubmitted: (_) => _addZekr(),
+                              onSubmitted: (_) => addZekr(),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -405,7 +415,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                             ),
                             child: IconButton(
                               icon: const Icon(Icons.add, color: AppColors.primary),
-                              onPressed: _addZekr,
+                              onPressed: addZekr,
                             ),
                           ),
                         ],
