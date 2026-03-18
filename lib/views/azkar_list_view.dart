@@ -182,7 +182,7 @@ class _ZekrCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               item.text,
