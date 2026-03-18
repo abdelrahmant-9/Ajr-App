@@ -241,13 +241,13 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                     height: 45,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: done ? AppColors.primary : AppColors.grey,
+                      color: done ? AppColors.primary : AppColors.greyLightBlue,
                       boxShadow: [
                         if (!done)
                           BoxShadow(
-                            color: AppColors.black.withOpacity(0.02),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                            color: AppColors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                       ],
                     ),
@@ -256,7 +256,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                           ? const Icon(Icons.check, color: AppColors.white, size: 22)
                           : const Text(
                               '···',
-                              style: TextStyle(color: AppColors.darkGrey, fontSize: 16),
+                              style: TextStyle(color: AppColors.greyBlue, fontSize: 16),
                             ),
                     ),
                   ),
@@ -266,7 +266,7 @@ class _AzkarViewState extends State<AzkarView> with WidgetsBindingObserver {
                     style: const TextStyle(
                       fontFamily: 'Tajawal',
                       fontSize: 11,
-                      color: AppColors.darkGrey,
+                      color: AppColors.greyBlue,
                     ),
                   ),
                 ],
