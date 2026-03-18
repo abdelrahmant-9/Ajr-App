@@ -4,6 +4,10 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:io';
 import '../services/notification_service.dart';
 
 class DebugDashboard extends StatefulWidget {
@@ -19,17 +23,88 @@ class _DebugDashboardState extends State<DebugDashboard> {
   Map<String, dynamic> _firebaseData = {};
   String _firebaseStatus = '...';
   bool _loading = true;
+  
+  // Notification States
+  int _pendingCount = 0;
+  List<PendingNotificationRequest> _pendingList = [];
+  bool _notificationsEnabled = true;
+  String _nextTime = '-';
 
   @override
   void initState() {
     super.initState();
     _loadAll();
+    _loadNotifications();
+    _checkNotificationPermission();
+    _loadNextTime();
   }
 
   Future<void> _loadAll() async {
     setState(() => _loading = true);
     await Future.wait([_loadHive(), _loadPrefs(), _loadFirebase()]);
     setState(() => _loading = false);
+  }
+
+  Future<void> _loadNotifications() async {
+    final pending = await NotificationService().pendingNotifications();
+    setState(() {
+      _pendingCount = pending.length;
+      _pendingList = pending;
+    });
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final androidPlugin = NotificationService()
+        .plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    final enabled = await androidPlugin?.areNotificationsEnabled();
+    setState(() {
+      _notificationsEnabled = enabled ?? true;
+    });
+  }
+
+  Future<void> _loadNextTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final h = prefs.getInt('reminder_hour');
+    final m = prefs.getInt('reminder_minute');
+
+    if (h != null && m != null) {
+      setState(() {
+        _nextTime = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+      });
+    } else {
+      setState(() {
+        _nextTime = '-';
+      });
+    }
+  }
+
+  /// فتح إعدادات البطارية بشكل أدق
+  Future<void> _openBatterySettings() async {
+    if (Platform.isAndroid) {
+      try {
+        final packageInfo = await PackageInfo.fromPlatform();
+        final intent = AndroidIntent(
+          action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
+          data: 'package:${packageInfo.packageName}', // توجيه مباشر للتطبيق
+        );
+        await intent.launch();
+      } catch (e) {
+        // لو الطريقة المباشرة فشلت، نفتح الصفحة العامة
+        try {
+          const intent = AndroidIntent(
+            action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',
+          );
+          await intent.launch();
+        } catch (e2) {
+          _showSnack('Error opening settings: $e2');
+        }
+      }
+    } else {
+      _showSnack('Battery settings only available on Android');
+    }
   }
 
   Future<void> _loadHive() async {
@@ -130,17 +205,20 @@ class _DebugDashboardState extends State<DebugDashboard> {
           icon: const Icon(Icons.close, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.bug_report, color: Colors.greenAccent, size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Debug Dashboard',
-              style: TextStyle(
-                fontFamily: 'monospace',
-                color: Colors.greenAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            const Icon(Icons.bug_report, color: Colors.greenAccent, size: 20),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Debug Dashboard',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  color: Colors.greenAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -148,7 +226,12 @@ class _DebugDashboardState extends State<DebugDashboard> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
-            onPressed: _loadAll,
+            onPressed: () {
+              _loadAll();
+              _loadNotifications();
+              _checkNotificationPermission();
+              _loadNextTime();
+            },
             tooltip: 'Refresh all',
           ),
         ],
@@ -165,6 +248,32 @@ class _DebugDashboardState extends State<DebugDashboard> {
             color: Colors.orangeAccent,
             actions: [
               _actionButton(
+                label: 'Fix Battery',
+                icon: Icons.battery_alert,
+                color: Colors.redAccent,
+                onTap: _openBatterySettings,
+              ),
+              _actionButton(
+                label: 'Schedule 1 min',
+                icon: Icons.timer,
+                color: Colors.greenAccent,
+                onTap: () async {
+                  final now = TimeOfDay.now();
+                  int newMinute = now.minute + 1;
+                  int newHour = now.hour;
+                  if (newMinute >= 60) {
+                    newMinute = 0;
+                    newHour = (newHour + 1) % 24;
+                  }
+                  await NotificationService().scheduleDailyReminder(
+                    TimeOfDay(hour: newHour, minute: newMinute),
+                  );
+                  _showSnack('⏱ Scheduled after 1 min');
+                  _loadNotifications();
+                  _loadNextTime();
+                },
+              ),
+              _actionButton(
                 label: 'Send Test',
                 icon: Icons.send,
                 color: Colors.orangeAccent,
@@ -180,10 +289,45 @@ class _DebugDashboardState extends State<DebugDashboard> {
                 onTap: () async {
                   await NotificationService().cancelDailyReminder();
                   _showSnack('🔕 Notifications cancelled');
+                  _loadNotifications();
+                  _loadNextTime();
                 },
               ),
             ],
-            content: null,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _dataRow('Pending Notifications', _pendingCount.toString()),
+                _dataRow(
+                  'Daily Reminder Status',
+                  _pendingCount > 0 ? 'ON ✅' : 'OFF ❌',
+                ),
+                _dataRow(
+                  'Notifications Permission',
+                  _notificationsEnabled ? 'ENABLED ✅' : 'DISABLED ❌',
+                ),
+                _dataRow('Next Reminder Time', _nextTime),
+                _dataRow(
+                  'Battery Optimization',
+                  _pendingCount > 0 ? 'Check manually ⚠️' : '-',
+                ),
+                if (_pendingCount > 0)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Tip: Click "Fix Battery" to disable optimization',
+                      style: TextStyle(color: Colors.orangeAccent, fontSize: 10, fontFamily: 'Tajawal'),
+                    ),
+                  ),
+                if (_pendingList.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  const Text('Pending IDs:', style: TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'monospace')),
+                  ..._pendingList.map(
+                        (e) => _dataRow('ID', e.id.toString()),
+                  ),
+                ],
+              ],
+            ),
           ),
 
           const SizedBox(height: 12),
@@ -310,10 +454,10 @@ class _DebugDashboardState extends State<DebugDashboard> {
           Center(
             child: Text(
               '⚠️  Developer only — remove before release',
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 11,
-                color: Colors.red.withOpacity(0.6),
+                color: Colors.white24,
               ),
             ),
           ),
@@ -348,25 +492,34 @@ class _DebugDashboardState extends State<DebugDashboard> {
               borderRadius:
               const BorderRadius.vertical(top: Radius.circular(12)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          color: color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
+                  ],
+                ),
+                if (actions.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: actions,
                   ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: actions),
-                ),
+                ],
               ],
             ),
           ),
@@ -389,8 +542,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(left: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: color.withOpacity(0.15),
           borderRadius: BorderRadius.circular(8),
@@ -399,11 +551,11 @@ class _DebugDashboardState extends State<DebugDashboard> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 12),
+            Icon(icon, color: color, size: 14),
             const SizedBox(width: 4),
             Text(label,
                 style: TextStyle(
-                    fontFamily: 'monospace', color: color, fontSize: 10)),
+                    fontFamily: 'monospace', color: color, fontSize: 11)),
           ],
         ),
       ),
@@ -414,7 +566,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
     return GestureDetector(
       onLongPress: () => _copyToClipboard('$key: $value'),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -443,8 +595,7 @@ class _DebugDashboardState extends State<DebugDashboard> {
                   color: Colors.white70,
                   fontSize: 11,
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
+                overflow: TextOverflow.clip,
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -11,10 +12,17 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
   FlutterLocalNotificationsPlugin();
 
+  FlutterLocalNotificationsPlugin get plugin => _plugin;
+
   static const int _dailyReminderId = 1;
 
   Future<void> init() async {
     tz.initializeTimeZones();
+    try {
+      tz.setLocalLocation(tz.getLocation('Africa/Cairo'));
+    } catch (e) {
+      debugPrint('TimeZone error: $e');
+    }
 
     const androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -32,21 +40,31 @@ class NotificationService {
 
     await _plugin.initialize(initSettings);
 
-    // Request permissions (Android 13+)
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.requestNotificationsPermission();
+    await androidPlugin?.requestExactAlarmsPermission();
+  }
+
+  /// الحصول على قائمة الإشعارات المجدولة التي لم تظهر بعد
+  Future<List<PendingNotificationRequest>> pendingNotifications() async {
+    return await _plugin.pendingNotificationRequests();
   }
 
   /// Schedule a daily notification at the given [time].
   Future<void> scheduleDailyReminder(TimeOfDay time) async {
+    // تنظيف الكل قبل الجدولة الجديدة لضمان عدم وجود تكرار
     await cancelDailyReminder();
+
+    // حفظ الوقت في SharedPreferences للرجوع إليه في الداشبورد
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('reminder_hour', time.hour);
+    await prefs.setInt('reminder_minute', time.minute);
 
     final now = DateTime.now();
     var scheduledDate = DateTime(
       now.year, now.month, now.day,
-      time.hour, time.minute,
+      time.hour, time.minute, 0,
     );
 
     if (scheduledDate.isBefore(now)) {
@@ -56,18 +74,15 @@ class NotificationService {
     final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
 
     const androidDetails = AndroidNotificationDetails(
-      'daily_reminder_channel',
-      'التذكير اليومي',
-      channelDescription: 'تذكير يومي بأذكار التسبيح',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const iosDetails = DarwinNotificationDetails();
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
+      'ajr_alarm_channel_v4',
+      'تنبيهات أجر المنبهة',
+      channelDescription: 'تذكير يومي بأذكار التسبيح بصيغة منبه',
+      importance: Importance.max,
+      priority: Priority.max,
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.alarm,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      playSound: true,
     );
 
     await _plugin.zonedSchedule(
@@ -75,38 +90,37 @@ class NotificationService {
       '🤲 وقت الأذكار',
       'لا تنسَ ذكر الله — اضغط للبدء',
       tzScheduled,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      const NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails()),
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       matchDateTimeComponents: DateTimeComponents.time,
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
-  /// إرسال تنبيه تجريبي فوراً لاختبار الإشعارات
+  /// إرسال تنبيه تجريبي فوراً
   Future<void> sendTestNotification() async {
     const androidDetails = AndroidNotificationDetails(
-      'test_channel',
-      'التجربة',
-      channelDescription: 'قناة لاختبار التنبيهات',
+      'ajr_test_channel_v4',
+      'تجربة التنبيهات',
       importance: Importance.max,
       priority: Priority.high,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      fullScreenIntent: true,
     );
 
     await _plugin.show(
       99,
-      'Test Notification',
-      'The Notification is working properly!',
-      details,
+      '🔔 تجربة التنبيه',
+      'إذا ظهر لك هذا، فالأذونات سليمة!',
+      const NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails()),
     );
   }
 
+  /// مسح كافة الإشعارات المجدولة والظاهرة
   Future<void> cancelDailyReminder() async {
-    await _plugin.cancel(_dailyReminderId);
+    await _plugin.cancelAll(); // 🔥 مسح الكل لضمان تصفير الـ Pending
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('reminder_hour');
+    await prefs.remove('reminder_minute');
   }
 }
