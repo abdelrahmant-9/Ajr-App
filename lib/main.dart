@@ -29,6 +29,7 @@ void main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('ajrBox');
+  await Hive.openBox('azkarProgress');
   await NotificationService().init();
 
   SyncService().start();
